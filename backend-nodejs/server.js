@@ -14,6 +14,23 @@ client.on('connect', () => {
     console.log('Connected to Redis');
 });
 
+//sample endpoint test 
+app.get('/users', async (req, res) => {
+    const cacheKey = 'users';
+    client.get(cacheKey, async (err, data) => {
+        if (err) throw err;
+
+        if (data) {
+            res.send(JSON.parse(data));
+        } else {
+            const users = await sequelize.query('SELECT * FROM users', { type: Sequelize.QueryTypes.SELECT });
+            client.setEx(cacheKey, 3600, JSON.stringify(users));
+            res.send(users);
+        }
+    });
+});
+
+
 app.listen(PORT, () => {
     console.log('Server is running')
 });
