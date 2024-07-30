@@ -1,5 +1,6 @@
 import express from 'express'
 import redis from 'redis';
+import { sequelize, Sequelize } from './models';
 
 const app = express ();
 const PORT = 3000
