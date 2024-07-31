@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { Database } from 'sqlite';
 import { createUser, getUsers } from '../models/user';
 import { RedisClientType } from 'redis';
+import { getCachedData, setCachedData } from '../services/cacheService';
 
 const router = Router();
 
@@ -10,13 +11,13 @@ const userRoutes = (db: Database, redisClient: RedisClientType) => {
         const cacheKey = 'users';
 
         try {
-            const cachedData = await redisClient.get(cacheKey);
+            const cachedData = await getCachedData(redisClient, cacheKey);
 
             if (cachedData) {
                 res.json(JSON.parse(cachedData));
             } else {
                 const users = await getUsers(db);
-                await redisClient.set(cacheKey, JSON.stringify(users), { EX: 3600 });
+                await setCachedData(redisClient, cacheKey, JSON.stringify(users), 3600);
                 res.json(users);
             }
         } catch (error) {
